@@ -23,9 +23,9 @@ class Drive:  # создаём класс
         self.rect.y += 15
 
 background = Drive('background.png', 0, 0)  # создание объекта класса Drive
-#crystal = Drive(".png", 60, randint(-100,0))
+crystal = Drive(".png", 60, randint(-100,0))
 
-window_size=(1000, 750) # ширина / высота
+window_size=(900, 760) # ширина / высота
 win = pygame.display.set_mode(window_size)  # создание экрана
 pygame.display.set_caption("Crystal Drive")  # заголовок окна
 clock = pygame.time.Clock()  # для FPS (контроль скорости)
