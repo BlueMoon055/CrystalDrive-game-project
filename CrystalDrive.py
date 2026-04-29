@@ -13,15 +13,15 @@ class Drive:
     def move_car(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_a]:
-            self.rect.x -= 35
+            self.rect.x -= 9
         if keys[pygame.K_d]:
-            self.rect.x += 35
+            self.rect.x += 9
 
     def draw_image(self):
         win.blit(self.image, (self.rect.x, self.rect.y))
 
     def move_down(self):
-        self.rect.y += 20
+        self.rect.y += 5
 
 # ЗАГРУЗКА ОБЪЕКТОВ
 pygame.init()  # Включаем pygame (окно, картинки, клавиши)
@@ -34,15 +34,15 @@ crystal_sound = pygame.mixer.Sound("crystal_sound.mp3")
 car_sound = pygame.mixer.Sound("car_sound.mp3")
 
 # настройка громкости
-pygame.mixer.music.set_volume(0.5)  # фоновая музыка на 50%
-game_over_sound.set_volume(0.8)  # авария на 80%
-crystal_sound.set_volume(0.8)  # сбор кристаллов на 80%
-car_sound.set_volume(0.3)  # двигатель на 30%
+pygame.mixer.music.set_volume(0.4)  # фоновая музыка на 40%
+game_over_sound.set_volume(1)  # авария на 100%
+crystal_sound.set_volume(1)  # сбор кристаллов на 100%
+car_sound.set_volume(0.6)  # двигатель на 60%
 
 # картинки
 bg1 = Drive('road.png', 0, 0)
 bg2 = Drive('road.png', 0, -760)
-car = Drive('c_car.png', 400, 650)
+car = Drive('c_car.png', 400, 550)
 crystal = Drive('crystal.png', 0, 0)
 obstacle = Drive('obstacle.png', 0, 0)
 canister = Drive('canister.png', 0, 0)
@@ -52,6 +52,7 @@ menu_img = pygame.image.load('road.png')  # для меню
 window_size=(900, 760) # ширина / высота
 win = pygame.display.set_mode(window_size)  # создание экрана
 pygame.display.set_caption("Crystal Drive")  # заголовок окна
+pygame.display.set_icon(pygame.image.load("icon.png"))  # добавляем иконку
 clock = pygame.time.Clock()  # для FPS (контроль скорости)
 
 # переменные
@@ -74,7 +75,7 @@ if best is None:
 
 pygame.mixer.music.play(-1)  # зацикливаем музыку
 
-# ГЛАВНЫЙ ЦИКЛ
+#  ГЛАВНЫЙ ЦИКЛ
 while True:
     #  ГЛАВНОЕ МЕНЮ
     menu = True
@@ -115,8 +116,8 @@ while True:
         clock.tick(60)
 
         # движение фона
-        bg1.rect.y += 3
-        bg2.rect.y += 3
+        bg1.rect.y += 5
+        bg2.rect.y += 5
         if bg1.rect.y >= 760:
             bg1.rect.y = bg2.rect.y - 760
         if bg2.rect.y >= 760:
@@ -130,14 +131,14 @@ while True:
 
         # движение машинки
         car.move_car()
-        if car.rect.x < 50:
-            car.rect.x = 50
-        if car.rect.x > 850:
-            car.rect.x = 850
+        if car.rect.x < 70:
+            car.rect.x = 70
+        if car.rect.x > 830:
+            car.rect.x = 830
 
         # бензин
         if not game_over:
-            fuel -= 0.2
+            fuel -= 0.1
             if fuel <= 0:
                 game_over = True
                 game_over_sound.play()
@@ -148,17 +149,17 @@ while True:
             ct += 1
             if ct > 25:
                 ct = 0
-                crystals.append(Drive('crystal.png', random.randint(20, 840), -50))
+                crystals.append(Drive('crystal.png', random.randint(0, 840), -50))
 
             ob += 1
             if ob > 50:
                 ob = 0
-                obstacles.append(Drive('obstacle.png', random.randint(20, 840), -50))
+                obstacles.append(Drive('obstacle.png', random.randint(0, 840), -50))
 
             cn += 1
             if cn > 100:
                 cn = 0
-                canisters.append(Drive('canister.png', random.randint(20, 840), -50))
+                canisters.append(Drive('canister.png', random.randint(0, 840), -50))
 
         # движение объектов
         for i in crystals: i.move_down()
@@ -173,19 +174,19 @@ while True:
         # столкновения
         car_rect = car.rect
 
-        for i in crystals[:]:
+        for i in crystals:
             if car_rect.colliderect(i.rect):
                 crystals.remove(i)
                 score += 1
                 crystal_sound.play()
 
-        for j in obstacles[:]:
+        for j in obstacles:
             if car_rect.colliderect(j.rect):
                 game_over = True
                 game_over_sound.play()
                 car_sound.stop()
 
-        for k in canisters[:]:
+        for k in canisters:
             if car_rect.colliderect(k.rect):
                 canisters.remove(k)
                 fuel += 20
@@ -207,7 +208,7 @@ while True:
         # GAME OVER - выход в меню
         if game_over:
             go_text = pygame.font.Font(None, 70).render("GAME OVER", True, (255, 0, 0))
-            win.blit(go_text, (385, 350))
+            win.blit(go_text, (335, 350))
             pygame.display.flip()
             pygame.time.wait(1000)  # ждём секунду
             break  # выходим из игры в меню
