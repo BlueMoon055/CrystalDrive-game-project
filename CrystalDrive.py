@@ -29,15 +29,15 @@ pygame.mixer.init()  # Включаем звуки и музыку
 
 # звуки
 pygame.mixer.music.load("music_game.mp3")
-game_over_sound = pygame.mixer.Sound("sound_game_over.mp3")
-crystal_sound = pygame.mixer.Sound("crystal_sound.mp3")
+game_over_sound = pygame.mixer.Sound("crash_sound.mp3")
+crystal_sound = pygame.mixer.Sound("collect_crystal.mp3")
 car_sound = pygame.mixer.Sound("car_sound.mp3")
 
 # настройка громкости
 pygame.mixer.music.set_volume(0.4)  # фоновая музыка на 40%
 game_over_sound.set_volume(1)  # авария на 100%
 crystal_sound.set_volume(1)  # сбор кристаллов на 100%
-car_sound.set_volume(0.6)  # двигатель на 60%
+car_sound.set_volume(0.8)  # двигатель на 80%
 
 # картинки
 bg1 = Drive('road.png', 0, 0)
@@ -131,10 +131,10 @@ while True:
 
         # движение машинки
         car.move_car()
-        if car.rect.x < 70:
-            car.rect.x = 70
-        if car.rect.x > 830:
-            car.rect.x = 830
+        if car.rect.x < 130:
+            car.rect.x = 130
+        if car.rect.x > 695:
+            car.rect.x = 695
 
         # бензин
         if not game_over:
