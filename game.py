@@ -1,0 +1,241 @@
+import sys
+import pygame
+import random
+import sqlite3
+import os
+
+def resource_path(relative_path):
+    # Получает правильный путь к файлу (для exe и для разработки)
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
+class Drive:
+    def __init__(self, a, c, d):
+        self.image = pygame.image.load(a)
+        self.rect = self.image.get_rect()
+        self.rect.x = c
+        self.rect.y = d
+
+    def move_car(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_a]:
+            self.rect.x -= 9
+        if keys[pygame.K_d]:
+            self.rect.x += 9
+
+    def draw_image(self):
+        win.blit(self.image, (self.rect.x, self.rect.y))
+
+    def move_down(self):
+        self.rect.y += 5
+
+# ЗАГРУЗКА ОБЪЕКТОВ
+pygame.init()  # Включаем pygame (окно, картинки, клавиши)
+pygame.mixer.init()  # Включаем звуки и музыку
+
+# звуки
+pygame.mixer.music.load(resource_path("music_game.wav"))
+car_sound = pygame.mixer.Sound(resource_path("car_sound.wav"))
+
+# настройка громкости
+pygame.mixer.music.set_volume(0.4)  # фоновая музыка на 40%
+car_sound.set_volume(1)  # двигатель на 100%
+
+# картинки
+bg1 = Drive(resource_path('road.png'), 0, 0)
+bg2 = Drive(resource_path('road.png'), 0, -760)
+car = Drive(resource_path('c_car.png'), 400, 550)
+crystal = Drive(resource_path('crystal.png'), 0, 0)
+obstacle = Drive(resource_path('obstacle.png'), 0, 0)
+canister = Drive(resource_path('canister.png'), 0, 0)
+menu_img = pygame.image.load(resource_path('road.png'))  # для меню
+
+# окно
+window_size=(900, 760) # ширина / высота
+win = pygame.display.set_mode(window_size)  # создание экрана
+pygame.display.set_caption("Crystal Drive")  # заголовок окна
+pygame.display.set_icon(pygame.image.load(resource_path("icon.png")))  # добавляем иконку
+clock = pygame.time.Clock()  # для FPS (контроль скорости)
+
+# переменные
+score = 0  # общий счёт на главном экране
+fuel = 100  # топливо
+crystals = []
+obstacles = []
+canisters = []
+game_over = False
+
+# бд для рекорда
+conn = sqlite3.connect("my_score.db")
+c = conn.cursor()
+c.execute("CREATE TABLE IF NOT EXISTS records (score INT)")
+conn.commit()
+c.execute("SELECT MAX(score) FROM records")
+best = c.fetchone()[0]
+if best is None:
+    best = 0
+
+pygame.mixer.music.play(-1)  # зацикливаем музыку
+
+#  ГЛАВНЫЙ ЦИКЛ
+while True:
+    #  ГЛАВНОЕ МЕНЮ
+    menu = True
+    button = pygame.Rect(370, 350, 160, 50)
+    font = pygame.font.Font(None, 50)
+    text = font.render("ИГРАТЬ", True, (255, 255, 255))
+    record_font = pygame.font.Font(None, 50)
+    welcome_font = pygame.font.Font(None, 80)
+    version_font = pygame.font.Font(None, 30)
+
+    while menu:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if button.collidepoint(event.pos):
+                    menu = False
+
+        win.blit(menu_img, (0, 0))
+        pygame.draw.rect(win, (128, 0, 255), button)
+        win.blit(text, (385, 360))
+        welcome_text = welcome_font.render(f"Welcome to Crystal Drive game!", True, (255, 255, 102))
+        record_text = record_font.render(f"МОЙ РЕКОРД КРИСТАЛЛОВ: {best}", True, (0, 255, 255))
+        ready_text = record_font.render(f"Вы готовы к гонке?", True, (255, 255, 255))
+        creator_text = record_font.render(f"Создатель: Даниил Б", True, (230, 200, 255))
+        version_text = version_font.render(f"version: 1.0", True, (255, 255, 255))
+        win.blit(welcome_text, (25, 130))
+        win.blit(record_text, (175, 230))
+        win.blit(ready_text, (290, 290))
+        win.blit(creator_text, (265, 600))
+        win.blit(version_text, (10, 730))
+        pygame.display.flip()
+        clock.tick(60)
+
+    #  СБРОС ПЕРЕД ИГРОЙ
+    score = 0
+    fuel = 100
+    car.rect.x = 400
+    crystals = []
+    obstacles = []
+    canisters = []
+    game_over = False
+    ct = ob = cn = 0
+
+    #  ИГРА
+    while True:
+        clock.tick(60)
+
+        # движение фона
+        bg1.rect.y += 5
+        bg2.rect.y += 5
+        if bg1.rect.y >= 760:
+            bg1.rect.y = bg2.rect.y - 760
+        if bg2.rect.y >= 760:
+            bg2.rect.y = bg1.rect.y - 760
+
+        # звук двигателя
+        if not game_over and fuel > 0:
+            car_sound.play(-1)
+        else:
+            car_sound.stop()
+
+        # движение машинки
+        car.move_car()
+        if car.rect.x < 130:
+            car.rect.x = 130
+        if car.rect.x > 695:
+            car.rect.x = 695
+
+        # бензин
+        if not game_over:
+            fuel -= 0.15
+            if fuel <= 0:
+                game_over = True
+                car_sound.stop()
+
+        # спавн объектов
+        if not game_over:
+            ct += 1
+            if ct > 25:
+                ct = 0
+                crystals.append(Drive(resource_path('crystal.png'), random.randint(0, 840), -50))
+
+            ob += 1
+            if ob > 50:
+                ob = 0
+                obstacles.append(Drive(resource_path('obstacle.png'), random.randint(0, 840), -50))
+
+            cn += 1
+            if cn > 100:
+                cn = 0
+                canisters.append(Drive(resource_path('canister.png'), random.randint(0, 840), -50))
+
+        # движение объектов
+        for i in crystals: i.move_down()
+        for j in obstacles: j.move_down()
+        for k in canisters: k.move_down()
+
+        # удаление
+        crystals = [i for i in crystals if i.rect.y < 760]
+        obstacles = [j for j in obstacles if j.rect.y < 760]
+        canisters = [k for k in canisters if k.rect.y < 760]
+
+        # столкновения
+        car_rect = car.rect
+
+        for i in crystals:
+            if car_rect.colliderect(i.rect):
+                crystals.remove(i)
+                score += 1
+
+        for j in obstacles:
+            if car_rect.colliderect(j.rect):
+                game_over = True
+                car_sound.stop()
+
+        for k in canisters:
+            if car_rect.colliderect(k.rect):
+                canisters.remove(k)
+                fuel += 20
+                if fuel > 100: fuel = 100
+
+        # отрисовка
+        bg1.draw_image()
+        bg2.draw_image()
+        for i in crystals: i.draw_image()
+        for j in obstacles: j.draw_image()
+        for k in canisters: k.draw_image()
+        car.draw_image()
+
+        # текст
+        f = pygame.font.Font(None, 40)
+        win.blit(f.render(f"СЧЁТ КРИСТАЛЛОВ: {score}", 1, (0, 255, 255)), (10, 10))
+        win.blit(f.render(f"БЕНЗИН: {int(fuel)}", 1, (0, 255, 0)), (10, 50))
+        win.blit(version_text, (10, 730))
+
+        # GAME OVER - выход в меню
+        if game_over:
+            go_text = pygame.font.Font(None, 70).render("GAME OVER", True, (255, 0, 0))
+            win.blit(go_text, (335, 350))
+            pygame.display.flip()
+            pygame.time.wait(1000)  # ждём секунду
+            break  # выходим из игры в меню
+
+        # сохраняем рекорд
+        if score > best:
+            best = score
+            c.execute("INSERT INTO records VALUES (?)", (score,))
+            conn.commit()
+
+        # обработка событий
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+        pygame.display.flip()
