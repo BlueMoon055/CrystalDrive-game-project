@@ -1,0 +1,1 @@
+pyinstaller --onefile --windowed --icon=icon.ico --add-data "road.png;." --add-data "c_car.png;." --add-data "crystal.png;." --add-data "obstacle.png;." --add-data "canister.png;." --add-data "icon.png;." --add-data "music_game.wav;." --add-data "car_sound.wav;." game.py -n "crystal drive game"
