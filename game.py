@@ -22,15 +22,15 @@ class Drive:
     def move_car(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_a]:
-            self.rect.x -= 9
+            self.rect.x -= 10
         if keys[pygame.K_d]:
-            self.rect.x += 9
+            self.rect.x += 10
 
     def draw_image(self):
         win.blit(self.image, (self.rect.x, self.rect.y))
 
     def move_down(self):
-        self.rect.y += 5
+        self.rect.y += 10
 
 # ЗАГРУЗКА ОБЪЕКТОВ
 pygame.init()  # Включаем pygame (окно, картинки, клавиши)
@@ -131,8 +131,8 @@ while True:
         clock.tick(60)
 
         # движение фона
-        bg1.rect.y += 5
-        bg2.rect.y += 5
+        bg1.rect.y += 10
+        bg2.rect.y += 10
         if bg1.rect.y >= 760:
             bg1.rect.y = bg2.rect.y - 760
         if bg2.rect.y >= 760:
@@ -201,7 +201,7 @@ while True:
         for k in canisters:
             if car_rect.colliderect(k.rect):
                 canisters.remove(k)
-                fuel += 20
+                fuel += 25
                 if fuel > 100: fuel = 100
 
         # отрисовка
