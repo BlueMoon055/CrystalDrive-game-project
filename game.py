@@ -107,7 +107,7 @@ while True:
         record_text = record_font.render(f"МОЙ РЕКОРД КРИСТАЛЛОВ: {best}", True, (0, 255, 255))
         ready_text = record_font.render(f"Вы готовы к гонке?", True, (255, 255, 255))
         creator_text = record_font.render(f"Создатель: Даниил Б", True, (230, 200, 255))
-        version_text = version_font.render(f"version: 1.0", True, (255, 255, 255))
+        version_text = version_font.render(f"version: 1.5", True, (255, 255, 255))
         win.blit(welcome_text, (25, 130))
         win.blit(record_text, (175, 230))
         win.blit(ready_text, (290, 290))
